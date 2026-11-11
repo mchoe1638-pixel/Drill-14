@@ -1,20 +1,57 @@
-from pico2d import load_image
+from pico2d import *
+import game_world
+import game_framework
+from boy import Boy
+from grass import Grass
+from bird import Bird
 
-COLS, ROWS = 5, 3   # 스프라이트 시트: 가로 5칸, 세로 3줄
+boy = None
 
 
-class Bird:
-    def __init__(self, x=400, y=400):
-        self.image = load_image('bird_animation.png')
-        self.x, self.y = x, y
-        # 시트 크기를 칸 수로 나눠 프레임 1칸의 크기를 계산
-        self.frame_w = self.image.w // COLS
-        self.frame_h = self.image.h // ROWS
+def handle_events():
+    event_list = get_events()
+    for event in event_list:
+        if event.type == SDL_QUIT:
+            game_framework.quit()
+            return
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
+            game_framework.quit()
+        else:
+            boy.handle_event(event)
 
-    def update(self):
-        pass
 
-    def draw(self):
-        # pico2d는 좌표 원점이 '왼쪽 아래'이므로 맨 윗줄은 bottom = frame_h * 2
-        self.image.clip_draw(0, self.frame_h * (ROWS - 1),
-                             self.frame_w, self.frame_h, self.x, self.y)
+def init():
+    global boy
+
+    boy = Boy()
+    game_world.add_oject(boy)
+
+    grass = Grass()
+    game_world.add_oject(grass, 0)
+
+    bird = Bird(400, 400)
+    game_world.add_oject(bird)
+
+
+def pause():
+    boy.pause()
+
+
+def resume():
+    pass
+
+
+def finish():
+    global boy
+    game_world.clear()
+    boy = None
+
+
+def update():
+    game_world.update()
+
+
+def draw():
+    clear_canvas()
+    game_world.render()
+    update_canvas()
