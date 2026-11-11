@@ -1,57 +1,45 @@
 from pico2d import *
-import game_world
-import game_framework
-from boy import Boy
-from grass import Grass
-from bird import Bird
 
-boy = None
+CANVAS_W, CANVAS_H = 800, 600
+COLS, ROWS = 5, 3   # bird_animation.png: 가로 5칸, 세로 3줄
+
+
+class Bird:
+    def __init__(self, x, y):
+        self.image = load_image('bird_animation.png')
+        self.x, self.y = x, y
+        # 시트 크기를 칸 수로 나눠 프레임 1칸 크기 계산
+        self.frame_w = self.image.w // COLS
+        self.frame_h = self.image.h // ROWS
+
+    def update(self):
+        pass
+
+    def draw(self):
+        # pico2d는 원점이 왼쪽 아래 → 시트 맨 윗줄은 bottom = frame_h * 2
+        self.image.clip_draw(0, self.frame_h * (ROWS - 1),
+                             self.frame_w, self.frame_h, self.x, self.y)
 
 
 def handle_events():
-    event_list = get_events()
-    for event in event_list:
+    global running
+    for event in get_events():
         if event.type == SDL_QUIT:
-            game_framework.quit()
-            return
+            running = False
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
-            game_framework.quit()
-        else:
-            boy.handle_event(event)
+            running = False
 
 
-def init():
-    global boy
+open_canvas(CANVAS_W, CANVAS_H)
+bird = Bird(400, 300)
 
-    boy = Boy()
-    game_world.add_oject(boy)
-
-    grass = Grass()
-    game_world.add_oject(grass, 0)
-
-    bird = Bird(400, 400)
-    game_world.add_oject(bird)
-
-
-def pause():
-    boy.pause()
-
-
-def resume():
-    pass
-
-
-def finish():
-    global boy
-    game_world.clear()
-    boy = None
-
-
-def update():
-    game_world.update()
-
-
-def draw():
+running = True
+while running:
+    handle_events()
+    bird.update()
     clear_canvas()
-    game_world.render()
+    bird.draw()
     update_canvas()
+    delay(0.01)
+
+close_canvas()
